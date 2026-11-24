@@ -98,3 +98,28 @@ body {
   opacity: 0;
 }
 
+/* Профиль пользователя */
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.profile-avatar i {
+    font-size: 40px;
+    color: #fff;
+}
+
+/* Таблица профиля */
+.profile-table td {
+    vertical-align: middle;
+}
+
+.profile-table td:first-child {
+    width: 120px;
+}
