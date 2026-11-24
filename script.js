@@ -7,8 +7,10 @@ function initData() {
   const seedUsers = [
     { id: 1, email: 'student1@campus.ru', password: '123456', full_name: 'Иван Петров', role: 'student', group: 'ИВТ-31', course_of_study: 3, faculty: 'Информационные технологии' },
     { id: 2, email: 'student2@campus.ru', password: '654321', full_name: 'Пётр Иванов', role: 'student', group: 'ИВТ-31', course_of_study: 3, faculty: 'Информационные технологии' },
-    { id: 3, email: 'administrator1@campus.ru', password: '123456', full_name: 'Анна Смирнова', role: 'administrator' },
-    { id: 4, email: 'administrator2@campus.ru', password: '654321', full_name: 'Олег Дроздов', role: 'administrator' }
+	  { id: 3, email: 'student3@campus.ru', password: '567890', full_name: 'Мария Кузнецова', role: 'student', group: 'ЭК-22', course_of_study: 3, faculty: 'Экономический' },
+	  { id: 4, email: 'student4@campus.ru', password: '098765', full_name: 'Дмитрий Соколов', role: 'student', group: 'ЭК-22', course_of_study: 3, faculty: 'Экономический' },
+    { id: 5, email: 'administrator1@campus.ru', password: '345678', full_name: 'Анна Смирнова', role: 'administrator' },
+    { id: 6, email: 'administrator2@campus.ru', password: '876543', full_name: 'Олег Дроздов', role: 'administrator' }
   ];
 
   let changed = false;
