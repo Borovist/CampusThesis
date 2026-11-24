@@ -17,14 +17,84 @@ body {
     padding: 1rem 2rem;
 }
 
+/* Чёрный цвет текста и элементов шапки */
+.navbar,
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-text,
+.navbar span,
+.navbar i {
+    color: #000 !important;
+}
+
+/* Кнопки в шапке — чёрный текст и чёрная рамка */
+.navbar .btn-outline-primary {
+    color: #000 !important;
+    border-color: #000 !important;
+}
+
+.navbar .btn-outline-primary:hover {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+/* Кнопка выхода — чёрный текст на прозрачном фоне с чёрной рамкой */
+.navbar .btn-danger {
+    color: #000 !important;
+    background-color: transparent !important;
+    border-color: #000 !important;
+}
+
+.navbar .btn-danger:hover {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+/* Иконка-бургер для мобильной версии */
+.navbar-toggler {
+    border-color: #000 !important;
+}
+
+.navbar-toggler-icon {
+    filter: invert(1);
+}
+
 .brand {
     font-size: 1.5rem;
     font-weight: bold;
-    background: black;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #000 !important;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+}
+
+/* Модальные окна */
+.modal-content {
+    border-radius: 20px;
+    border: none;
 }
 
 
+/* Тост-уведомления */
+.app-toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 500;
+  background: #198754;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+  transition: opacity .3s;
+}
+
+.app-toast--danger {
+  background: #dc3545;
+}
+
+.app-toast--hide {
+  opacity: 0;
+}
 
