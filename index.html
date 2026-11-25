@@ -56,11 +56,18 @@
     </div>
     <div class="col-6 col-md-2">
       <select id="program" class="form-select">
-        <option value="">Все направления</option>
-        <option value="1">09.03.04 Программная инженерия</option>
-        <option value="2">09.03.03 Прикладная информатика</option>
-        <option value="3">10.03.01 Информационная безопасность</option>
-      </select>
+		<option value="">Все направления</option>
+		<optgroup label="Информационные технологии">
+			<option value="1">09.03.04 Программная инженерия</option>
+			<option value="2">09.03.03 Прикладная информатика</option>
+			<option value="3">10.03.01 Информационная безопасность</option>
+		</optgroup>
+		<optgroup label="Экономический">
+			<option value="4">38.03.01 Экономика</option>
+			<option value="5">38.03.02 Менеджмент</option>
+			<option value="6">38.03.05 Бизнес-информатика</option>
+		</optgroup>
+		</select>
     </div>
     <div class="col-6 col-md-2">
       <select id="status" class="form-select">
@@ -73,8 +80,42 @@
       <button id="applyFilters" class="btn btn-outline-primary w-100">Найти</button>
     </div>
   </div>
-  <div id="topics" class="row g-3"></div>
+  <div id="topics" class="row g-3">
+	<template id="topicCardTemplate">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0" data-field="title"></h6>
+                    <span class="badge ms-2" data-field="status"></span>
+                </div>
+                <p class="card-text text-muted small flex-grow-1" data-field="description"></p>
+                <ul class="list-unstyled small mb-2">
+                    <li>
+                        <i class="bi bi-person-badge-fill text-primary"></i>
+                        <span data-field="supervisor"></span>
+                    </li>
+                    <li>
+                        <i class="bi bi-building-fill text-primary"></i>
+                        <span data-field="faculty"></span>
+                    </li>
+                    <li data-field="studentRow" style="display:none;">
+                        <i class="bi bi-person-fill text-primary"></i>
+                        <span data-field="student"></span>
+                    </li>
+                </ul>
+                <button class="btn btn-primary btn-sm w-100 mt-auto"
+                        data-field="takeButton"
+                        style="display:none;">
+                    <i class="bi bi-check2-circle"></i> Занять тему
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+  </div>
 </main>
+
 
 <!-- Модальное окно входа -->
 <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
@@ -103,8 +144,8 @@
             Студент 2: student2@campus.ru / 654321<br>
 			Студент 3: student3@campus.ru / 567890<br>
 			Студент 4: student4@campus.ru / 098765<br>
-            Руководитель 1: administrator1@campus.ru / 345678<br>
-            Руководитель 2: administrator2@campus.ru / 876543
+            Руководитель 1: supervisor1@campus.ru / 345678<br>
+            Руководитель 2: supervisor2@campus.ru / 876543
           </small>
         </details>
       </div>
@@ -117,9 +158,51 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"> Профиль пользователя</h5>
+                <h5 class="modal-title">Профиль пользователя</h5>
             </div>
             <div class="modal-body" id="profileContent">
+
+                <!-- Шаблон профиля -->
+                <template id="profileTemplate">
+                    <div class="text-center mb-3">
+                        <div class="profile-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h4 data-field="fullName"></h4>
+                        <span class="badge" data-field="role"></span>
+                    </div>
+                    <hr>
+                    <table class="table table-borderless profile-table">
+                        <tr>
+                            <td><i class="bi bi-envelope-fill text-primary"></i> <strong>Email:</strong></td>
+                            <td data-field="email"></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-person-badge-fill text-primary"></i> <strong>ФИО:</strong></td>
+                            <td data-field="fullName"></td>
+                        </tr>
+                        <!-- Строки только для студента -->
+                        <tr data-field="groupRow">
+                            <td><i class="bi bi-people-fill text-primary"></i> <strong>Группа:</strong></td>
+                            <td data-field="group"></td>
+                        </tr>
+                        <tr data-field="courseRow">
+                            <td><i class="bi bi-calendar-fill text-primary"></i> <strong>Курс:</strong></td>
+                            <td data-field="course"></td>
+                        </tr>
+                        <tr data-field="facultyRow">
+                            <td><i class="bi bi-building-fill text-primary"></i> <strong>Факультет:</strong></td>
+                            <td data-field="faculty"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><hr></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-calendar-date-fill text-primary"></i> <strong>ID пользователя:</strong></td>
+                            <td><small class="text-muted" data-field="userId"></small></td>
+                        </tr>
+                    </table>
+                </template>
 
             </div>
             <div class="modal-footer">
