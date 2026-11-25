@@ -3,17 +3,19 @@ let users = JSON.parse(localStorage.getItem('users') || '[]');
 let topics = JSON.parse(localStorage.getItem('topics') || '[]');
 let currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
 
-// ---------- Тестовые пользователи ----------
+// ---------- Тестовые данные ----------
 function initData() {
+	// Пользователи
   const seedUsers = [
     { id: 1, email: 'student1@campus.ru', password: '123456', full_name: 'Иван Петров', role: 'student', group: 'ИВТ-31', course_of_study: 3, faculty: 'Информационные технологии' },
     { id: 2, email: 'student2@campus.ru', password: '654321', full_name: 'Пётр Иванов', role: 'student', group: 'ИВТ-31', course_of_study: 3, faculty: 'Информационные технологии' },
     { id: 3, email: 'student3@campus.ru', password: '567890', full_name: 'Мария Кузнецова', role: 'student', group: 'ЭК-22', course_of_study: 3, faculty: 'Экономический' },
     { id: 4, email: 'student4@campus.ru', password: '098765', full_name: 'Дмитрий Соколов', role: 'student', group: 'ЭК-22', course_of_study: 3, faculty: 'Экономический' },
-    { id: 5, email: 'administrator1@campus.ru', password: '345678', full_name: 'Анна Смирнова', role: 'administrator' },
-    { id: 6, email: 'administrator2@campus.ru', password: '876543', full_name: 'Олег Дроздов', role: 'administrator' }
+    { id: 5, email: 'supervisor1@campus.ru', password: '345678', full_name: 'Анна Смирнова', role: 'supervisor' },
+    { id: 6, email: 'supervisor2@campus.ru', password: '876543', full_name: 'Олег Дроздов', role: 'supervisor' }
   ];
-	const seedTopics = [
+	  // Темы ВКР 
+  const seedTopics = [
     // --- Информационные технологии ---
     {
       id: 1,
@@ -129,6 +131,15 @@ function initData() {
     }
   ];
 
+  let topicsChanged = false;
+  seedTopics.forEach(seed => {
+    if (!topics.some(t => t.id === seed.id)) {
+      topics.push(seed);
+      topicsChanged = true;
+    }
+  });
+  if (topicsChanged) localStorage.setItem('topics', JSON.stringify(topics));
+	
   let changed = false;
   seedUsers.forEach(seed => {
     if (!users.some(u => u.email.toLowerCase() === seed.email.toLowerCase())) {
@@ -229,42 +240,44 @@ function updateUI() {
 function showUserProfile() {
     if (!currentUser) return;
 
-    const profileContent = document.getElementById('profileContent');
+    const container = document.getElementById('profileContent');
+    const template  = document.getElementById('profileTemplate');
+    if (!container || !template) return;
 
-    const roleLabel = currentUser.role === 'student' ? 'Студент' : 'Руководитель';
-    const roleClass = currentUser.role === 'student' ? 'bg-primary' : 'bg-success';
+    const isStudent = currentUser.role === 'student';
 
-    let profileHtml = `
-		<div class="text-center mb-3">
-			<div class="profile-avatar">
-				<i class="bi bi-person-fill"></i>
-			</div>
-			<h4>${escapeHtml(currentUser.full_name)}</h4>
-			<span class="badge ${roleClass}">${roleLabel}</span>
-		</div>
-		<hr>
-		<table class="table table-borderless profile-table">
-			<tr><td><i class="bi bi-envelope-fill text-primary"></i> <strong>Email:</strong></td><td>${escapeHtml(currentUser.email)}</td></tr>
-			<tr><td><i class="bi bi-person-badge-fill text-primary"></i> <strong>ФИО:</strong></td><td>${escapeHtml(currentUser.full_name)}</td></tr>
-		`;
+    // Клонируем шаблон
+    const node = template.content.cloneNode(true);
+    const $ = (field) => node.querySelector(`[data-field="${field}"]`);
 
-    if (currentUser.role === 'student') {
-        profileHtml += `
-            <tr><td><i class="bi bi-people-fill text-primary"></i> <strong>Группа:</strong></td><td>${escapeHtml(currentUser.group || 'Не указана')}</td></tr>
-            <tr><td><i class="bi bi-calendar-fill text-primary"></i> <strong>Курс:</strong></td><td>${currentUser.course_of_study || 'Не указан'}</td></tr>
-            <tr><td><i class="bi bi-building-fill text-primary"></i> <strong>Факультет:</strong></td><td>${escapeHtml(currentUser.faculty || 'Не указан')}</td></tr>
-        `;
+    // Заголовок и роль
+    $('fullName').textContent = currentUser.full_name;
+    const roleEl = $('role');
+    roleEl.textContent = isStudent ? 'Студент' : 'Руководитель';
+    roleEl.classList.add(isStudent ? 'bg-primary' : 'bg-success');
+
+    // Общие поля
+    $('email').textContent  = currentUser.email;
+    $('userId').textContent = currentUser.id;
+
+    // Поля только для студента
+    if (isStudent) {
+        $('group').textContent   = currentUser.group || 'Не указана';
+        $('course').textContent  = currentUser.course_of_study || 'Не указан';
+        $('faculty').textContent = currentUser.faculty || 'Не указан';
+    } else {
+        $('groupRow').style.display   = 'none';
+        $('courseRow').style.display  = 'none';
+        $('facultyRow').style.display = 'none';
     }
 
-    profileHtml += `<tr><td colspan="2"><hr></td></tr>
-        <tr><td><i class="bi bi-calendar-date-fill text-primary"></i> <strong>ID пользователя:</strong></td><td><small class="text-muted">${currentUser.id}</small></td></tr>
-     </table>`;
-
-    profileContent.innerHTML = profileHtml;
+    // Рендер
+    container.innerHTML = '';
+    container.appendChild(node);
     bootstrap.Modal.getOrCreateInstance(document.getElementById('profileModal')).show();
 }
 
-// ---------- Клик по имени пользователя ----------
+// ---------- Открытие профиля ----------
 document.addEventListener('DOMContentLoaded', () => {
   const userInfo = document.getElementById('userInfo');
   if (userInfo) {
@@ -275,6 +288,111 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ---------- Темы ВКР ----------
+function showTopics() {
+    const container = document.getElementById('topics');
+    const template  = document.getElementById('topicCardTemplate');
+    if (!container || !template) return;
+
+    const searchTerm   = (document.getElementById('search')?.value || '').trim().toLowerCase();
+    const programValue = document.getElementById('program')?.value || '';
+    const statusValue  = document.getElementById('status')?.value || '';
+
+    let filtered = [...topics];
+
+    // Поиск по названию или описанию
+    if (searchTerm) {
+        filtered = filtered.filter(t =>
+            t.title.toLowerCase().includes(searchTerm) ||
+            t.description.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Фильтр по направлению подготовки
+    if (programValue) {
+        filtered = filtered.filter(t => String(t.program) === String(programValue));
+    }
+
+    // Фильтр по статусу
+    if (statusValue) {
+        filtered = filtered.filter(t => t.status === statusValue);
+    }
+
+    container.innerHTML = '';
+
+    // Пустой результат
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">Тем не найдено</div></div>';
+        return;
+    }
+
+    // Рендер каждой карточки из шаблона
+    filtered.forEach(topic => {
+        const isOpen  = topic.status === 'open';
+        const canTake = currentUser && currentUser.role === 'student' && isOpen;
+
+        // Клонируем содержимое шаблона
+        const node = template.content.cloneNode(true);
+
+        // Хелпер для поиска элемента по data-field внутри клона
+        const $ = (field) => node.querySelector(`[data-field="${field}"]`);
+
+        // Заполняем текстовые поля (textContent экранирует HTML автоматически)
+        $('title').textContent       = topic.title;
+        $('description').textContent = topic.description;
+        $('supervisor').textContent  = topic.supervisor;
+        $('faculty').textContent     = topic.faculty;
+
+        // Статус
+        const statusEl = $('status');
+        statusEl.textContent = isOpen ? 'Свободна' : 'Занята';
+        statusEl.classList.add(isOpen ? 'bg-success' : 'bg-secondary');
+
+        // Студент, занявший тему
+        if (topic.student_id) {
+            const s = users.find(u => u.id === topic.student_id);
+            if (s) {
+                $('student').textContent = s.full_name;
+                $('studentRow').style.display = '';
+            }
+        }
+
+        // Кнопка «Занять тему»
+        const btn = $('takeButton');
+        if (canTake) {
+            btn.style.display = '';
+            btn.addEventListener('click', () => takeTopic(topic.id));
+        }
+
+        container.appendChild(node);
+    });
+}
+
+// ---------- Занять тему ----------
+function takeTopic(topicId) {
+    if (!currentUser || currentUser.role !== 'student') return;
+
+    const topic = topics.find(t => t.id === topicId);
+    if (!topic || topic.status !== 'open') {
+        showNotification('Тема уже занята', 'danger');
+        return;
+    }
+
+    topic.status = 'taken';
+    topic.student_id = currentUser.id;
+    localStorage.setItem('topics', JSON.stringify(topics));
+
+    showNotification('Тема успешно занята!');
+    showTopics();
+}
+
+// ---------- Привязка фильтров ----------
+document.getElementById('applyFilters')?.addEventListener('click', showTopics);
+document.getElementById('search')?.addEventListener('input', showTopics);
+document.getElementById('program')?.addEventListener('change', showTopics);
+document.getElementById('status')?.addEventListener('change', showTopics);
+
 
 // ---------- Старт ----------
 initData();
