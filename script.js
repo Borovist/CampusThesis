@@ -1,5 +1,6 @@
 // ---------- Данные ----------
 let users = JSON.parse(localStorage.getItem('users') || '[]');
+let topics = JSON.parse(localStorage.getItem('topics') || '[]');
 let currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
 
 // ---------- Тестовые пользователи ----------
@@ -11,6 +12,121 @@ function initData() {
     { id: 4, email: 'student4@campus.ru', password: '098765', full_name: 'Дмитрий Соколов', role: 'student', group: 'ЭК-22', course_of_study: 3, faculty: 'Экономический' },
     { id: 5, email: 'administrator1@campus.ru', password: '345678', full_name: 'Анна Смирнова', role: 'administrator' },
     { id: 6, email: 'administrator2@campus.ru', password: '876543', full_name: 'Олег Дроздов', role: 'administrator' }
+  ];
+	const seedTopics = [
+    // --- Информационные технологии ---
+    {
+      id: 1,
+      title: 'Разработка веб-приложения для учёта студенческих проектов',
+      description: 'Создание платформы для публикации и курирования ВКР студентов с ролевой моделью доступа.',
+      program: 1, // 09.03.04 Программная инженерия
+      faculty: 'Информационные технологии',
+      supervisor: 'Анна Смирнова',
+      supervisor_id: 5,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 2,
+      title: 'Проектирование микросервисной архитектуры для вузовского портала',
+      description: 'Исследование и реализация прототипа портала на основе микросервисов и API Gateway.',
+      program: 2, // 09.03.03 Прикладная информатика
+      faculty: 'Информационные технологии',
+      supervisor: 'Олег Дроздов',
+      supervisor_id: 6,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 3,
+      title: 'Анализ уязвимостей веб-приложений и методы их устранения',
+      description: 'Обзор OWASP Top 10, практические сценарии тестирования и рекомендации по защите.',
+      program: 3, // 10.03.01 Информационная безопасность
+      faculty: 'Информационные технологии',
+      supervisor: 'Анна Смирнова',
+      supervisor_id: 5,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 4,
+      title: 'Разработка мобильного приложения для расписания занятий',
+      description: 'Кроссплатформенное приложение с синхронизацией расписания и push-уведомлениями.',
+      program: 1, // 09.03.04 Программная инженерия
+      faculty: 'Информационные технологии',
+      supervisor: 'Олег Дроздов',
+      supervisor_id: 6,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 5,
+      title: 'Применение машинного обучения для анализа успеваемости студентов',
+      description: 'Построение моделей прогнозирования академических рисков на основе исторических данных.',
+      program: 2, // 09.03.03 Прикладная информатика
+      faculty: 'Информационные технологии',
+      supervisor: 'Анна Смирнова',
+      supervisor_id: 5,
+      status: 'open',
+      student_id: null
+    },
+
+    // --- Экономический ---
+    {
+      id: 6,
+      title: 'Оценка эффективности инвестиционных проектов предприятия',
+      description: 'Методика расчёта NPV, IRR и срока окупаемости на примере реального кейса.',
+      program: 4, // 38.03.01 Экономика
+      faculty: 'Экономический',
+      supervisor: 'Олег Дроздов',
+      supervisor_id: 6,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 7,
+      title: 'Разработка стратегии продвижения образовательных услуг вуза',
+      description: 'Анализ рынка, сегментация аудитории и план маркетинговых мероприятий.',
+      program: 5, // 38.03.02 Менеджмент
+      faculty: 'Экономический',
+      supervisor: 'Анна Смирнова',
+      supervisor_id: 5,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 8,
+      title: 'Цифровизация бизнес-процессов малого предприятия',
+      description: 'Выбор и внедрение информационной системы, оценка экономического эффекта.',
+      program: 6, // 38.03.05 Бизнес-информатика
+      faculty: 'Экономический',
+      supervisor: 'Олег Дроздов',
+      supervisor_id: 6,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 9,
+      title: 'Анализ финансовой устойчивости коммерческой организации',
+      description: 'Расчёт коэффициентов ликвидности и платёжеспособности, выводы и рекомендации.',
+      program: 4, // 38.03.01 Экономика
+      faculty: 'Экономический',
+      supervisor: 'Анна Смирнова',
+      supervisor_id: 5,
+      status: 'open',
+      student_id: null
+    },
+    {
+      id: 10,
+      title: 'Управление проектами внедрения ERP-систем на предприятии',
+      description: 'Обзор методологий внедрения, риски и план проекта на примере ERP-решения.',
+      program: 6, // 38.03.05 Бизнес-информатика
+      faculty: 'Экономический',
+      supervisor: 'Олег Дроздов',
+      supervisor_id: 6,
+      status: 'open',
+      student_id: null
+    }
   ];
 
   let changed = false;
@@ -163,3 +279,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // ---------- Старт ----------
 initData();
 updateUI();
+showTopics();
