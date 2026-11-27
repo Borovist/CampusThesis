@@ -2,6 +2,8 @@
 let users = JSON.parse(localStorage.getItem('users') || '[]');
 let topics = JSON.parse(localStorage.getItem('topics') || '[]');
 let currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+let applications = JSON.parse(localStorage.getItem('applications') || '[]');
+let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
 
 // ---------- Тестовые данные ----------
 function initData() {
@@ -147,7 +149,9 @@ function initData() {
       changed = true;
     }
   });
-  if (changed) localStorage.setItem('users', JSON.stringify(users));
+	if (changed) localStorage.setItem('users', JSON.stringify(users));
+	if (!localStorage.getItem('applications')) localStorage.setItem('applications', '[]');
+	if (!localStorage.getItem('notifications')) localStorage.setItem('notifications', '[]');
 }
 
 // ---------- Модальное окно входа ----------
@@ -178,9 +182,10 @@ function handleLogin(event) {
 
   showNotification(`Добро пожаловать, ${user.full_name}!`);
   updateUI();
-
-  bootstrap.Modal.getInstance(document.getElementById('loginModal'))?.hide();
-  document.getElementById('loginForm').reset();
+  
+	updateNotificationsBadge();
+	bootstrap.Modal.getInstance(document.getElementById('loginModal'))?.hide();
+	document.getElementById('loginForm').reset();
 }
 function logout() {
   currentUser = null;
@@ -225,6 +230,7 @@ function updateUI() {
     show('logoutBtn', 'block');
     show('userInfo', 'block');
     show('notificationsNav', 'block');
+	updateNotificationsBadge();
 
     const userName = document.getElementById('userName');
     if (userName) userName.textContent = currentUser.full_name;
@@ -358,19 +364,30 @@ function showTopics() {
             }
         }
 
-        // Кнопка «Занять тему»
-        const btn = $('takeButton');
-        if (canTake) {
-            btn.style.display = '';
-            btn.addEventListener('click', () => takeTopic(topic.id));
-        }
+		// Кнопка «Подать заявку»
+		const btn = $('takeButton');
+		if (canTake) {
+			const alreadyApplied = applications.some(a =>
+				a.topic_id === topic.id &&
+				a.student_id === currentUser.id &&
+				a.status === 'pending'
+			);
+			if (alreadyApplied) {
+				btn.disabled = true;
+				btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Заявка отправлена';
+				btn.style.display = '';
+			} else {
+				btn.style.display = '';
+				btn.addEventListener('click', () => applyForTopic(topic.id));
+			}
+		}
 
         container.appendChild(node);
     });
 }
 
-// ---------- Занять тему ----------
-function takeTopic(topicId) {
+// ---------- Подать заявку на тему ----------
+function applyForTopic(topicId) {
     if (!currentUser || currentUser.role !== 'student') return;
 
     const topic = topics.find(t => t.id === topicId);
@@ -379,12 +396,187 @@ function takeTopic(topicId) {
         return;
     }
 
+    const existing = applications.find(a =>
+        a.topic_id === topicId &&
+        a.student_id === currentUser.id &&
+        a.status === 'pending'
+    );
+    if (existing) {
+        showNotification('Вы уже подали заявку на эту тему', 'danger');
+        return;
+    }
+
+    const application = {
+		id: Date.now(),
+		topic_id: topicId,
+		topic_title: topic.title,
+		student_id: currentUser.id,
+		student_name: currentUser.full_name,
+		supervisor_id: topic.supervisor_id,
+		status: 'pending',
+		created_at: new Date().toISOString()
+	};
+	applications.push(application);
+	localStorage.setItem('applications', JSON.stringify(applications));
+
+	addNotification(
+		topic.supervisor_id,
+		`Новая заявка на тему «${topic.title}» от ${currentUser.full_name}`,
+		'application',
+		application.id          
+	);
+
+    showNotification('Заявка отправлена руководителю!');
+    showTopics();
+    updateNotificationsBadge();
+}
+
+// ---------- Уведомления ----------
+function addNotification(userId, message, type = 'info', applicationId = null) {
+    notifications.push({
+        id: Date.now() + Math.random(),
+        user_id: userId,
+        message,
+        type,
+        application_id: applicationId,
+        read: false,
+        created_at: new Date().toISOString()
+    });
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+    updateNotificationsBadge();
+}
+
+function getUserNotifications() {
+    if (!currentUser) return [];
+    return notifications
+        .filter(n => n.user_id === currentUser.id)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+function updateNotificationsBadge() {
+    if (!currentUser) return;
+    const unread = getUserNotifications().filter(n => !n.read).length;
+    const badge = document.getElementById('notificationsBadge');
+    if (!badge) return;
+    if (unread > 0) {
+        badge.textContent = unread;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function showNotifications() {
+    if (!currentUser) return;
+    const container = document.getElementById('notificationsContent');
+    if (!container) return;
+
+    const list = getUserNotifications();
+    container.innerHTML = '';
+
+    if (list.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0">Нет уведомлений</p>
+            </div>`;
+    } else {
+        list.forEach(n => {
+            const item = document.createElement('div');
+            item.className = 'border rounded p-3 mb-2' + (n.read ? ' bg-light' : '');
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="small text-muted mb-1">
+                            <i class="bi bi-clock"></i>
+                            ${new Date(n.created_at).toLocaleString('ru-RU')}
+                        </div>
+                        <div>${escapeHtml(n.message)}</div>
+                    </div>
+                    ${!n.read ? '<span class="badge bg-primary">Новое</span>' : ''}
+                </div>`;
+
+            // Для руководителя — кнопки одобрения заявки
+			if (currentUser.role === 'supervisor' && n.type === 'application' && n.application_id) {
+				const app = applications.find(a =>
+					a.id === n.application_id &&
+					a.supervisor_id === currentUser.id &&
+					a.status === 'pending'
+				);
+				if (app) {
+					const actions = document.createElement('div');
+					actions.className = 'mt-2 d-flex gap-2';
+					actions.innerHTML = `
+						<button class="btn btn-success btn-sm" onclick="approveApplication(${app.id})">
+							<i class="bi bi-check2"></i> Одобрить
+						</button>
+						<button class="btn btn-outline-danger btn-sm" onclick="rejectApplication(${app.id})">
+							<i class="bi bi-x"></i> Отклонить
+						</button>`;
+					item.appendChild(actions);
+				}
+			}
+
+            if (!n.read) {
+                n.read = true;
+                localStorage.setItem('notifications', JSON.stringify(notifications));
+            }
+            container.appendChild(item);
+        });
+        updateNotificationsBadge();
+    }
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('notificationsModal')).show();
+}
+
+// ---------- Одобрение/отклонение заявок ----------
+function approveApplication(appId) {
+    if (!currentUser || currentUser.role !== 'supervisor') return;
+    const app = applications.find(a => a.id === appId);
+    if (!app || app.status !== 'pending') return;
+
+    const topic = topics.find(t => t.id === app.topic_id);
+    if (!topic || topic.status !== 'open') {
+        showNotification('Тема уже занята другим студентом', 'danger');
+        return;
+    }
+
+    app.status = 'approved';
     topic.status = 'taken';
-    topic.student_id = currentUser.id;
+    topic.student_id = app.student_id;
+    localStorage.setItem('applications', JSON.stringify(applications));
     localStorage.setItem('topics', JSON.stringify(topics));
 
-    showNotification('Тема успешно занята!');
+    // Уведомляем студента
+    addNotification(app.student_id, `Ваша заявка на тему «${topic.title}» одобрена`, 'approved');
+
+    // Отклоняем остальные pending-заявки на эту тему
+    applications.forEach(a => {
+        if (a.topic_id === topic.id && a.id !== app.id && a.status === 'pending') {
+            a.status = 'rejected';
+            addNotification(a.student_id, `Заявка на тему «${topic.title}» отклонена (тема занята)`, 'rejected');
+        }
+    });
+    localStorage.setItem('applications', JSON.stringify(applications));
+
+    showNotification('Заявка одобрена');
+    showNotifications();
     showTopics();
+}
+
+function rejectApplication(appId) {
+    if (!currentUser || currentUser.role !== 'supervisor') return;
+    const app = applications.find(a => a.id === appId);
+    if (!app || app.status !== 'pending') return;
+
+    app.status = 'rejected';
+    localStorage.setItem('applications', JSON.stringify(applications));
+
+    const topic = topics.find(t => t.id === app.topic_id);
+    addNotification(app.student_id, `Ваша заявка на тему «${topic ? topic.title : app.topic_title}» отклонена`, 'rejected');
+
+    showNotification('Заявка отклонена');
+    showNotifications();
 }
 
 // ---------- Привязка фильтров ----------
