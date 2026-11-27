@@ -123,3 +123,23 @@ body {
 .profile-table td:first-child {
     width: 120px;
 }
+
+/* Бейдж уведомлений */
+.notification-badge {
+    background: #dc3545;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 0.7rem;
+    margin-left: 4px;
+    font-weight: 600;
+}
+
+/* Пункт уведомления */
+#notificationsContent .border.rounded {
+    transition: background-color .2s;
+}
+
+#notificationsContent .border.rounded:hover {
+    background-color: #f8f9fa;
+}
